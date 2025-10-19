@@ -1,0 +1,15 @@
+# Sử dụng image MySQL chính thức từ Docker Hub
+FROM mysql:8.0
+
+# Thiết lập các biến môi trường cần thiết
+# Thay đổi 'your_password' thành mật khẩu bạn muốn
+ENV MYSQL_ROOT_PASSWORD=xuanhungduong05
+ENV MYSQL_DATABASE=mydatabase
+ENV MYSQL_USER=certapiuser
+ENV MYSQL_PASSWORD=abc123
+
+# (Tùy chọn) Sao chép file cấu hình tùy chỉnh vào container
+# COPY my.cnf /etc/mysql/conf.d/my.cnf
+
+# (Tùy chọn) Sao chép script SQL để khởi tạo database
+# COPY init.sql /docker-entrypoint-initdb.d/

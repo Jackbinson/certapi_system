@@ -1,0 +1,62 @@
+# Specifies the version of the Docker Compose file format. '3.8' is a modern, recommended version.
+version: "3.8"
+
+# The top-level key that defines all the containers (services) that make up your application.
+services:
+  ########################################
+  # Database Service (MySQL)
+  ########################################
+  db:
+    # THAY ĐỔI 1: Build từ Dockerfile của bạn thay vì dùng image có sẵn
+    # Docker sẽ tìm Dockerfile trong thư mục ./mysql-custom-image để build.
+    build: ./mysql-custom-image
+
+    # Đặt tên cho container để dễ nhận biết
+    container_name: mysql_db
+
+    # THAY ĐỔI 2: Sử dụng env_file để nạp cấu hình cho MySQL
+    # Đây là cách tốt nhất để quản lý mật khẩu và các biến môi trường.
+    env_file:
+      - ./mysql-custom-image/.env
+
+    # Ánh xạ cổng 3307 của máy bạn vào cổng 3306 (cổng mặc định của MySQL) bên trong container.
+    ports:
+      - "3307:3306"
+
+    # THAY ĐỔI 3: Sử dụng "named volume" để lưu trữ dữ liệu MySQL.
+    # Rất quan trọng: Dữ liệu sẽ không bị mất ngay cả khi container bị xóa.
+    # Đường dẫn cho dữ liệu MySQL là /var/lib/mysql.
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  ########################################
+  # Web Application Service (Node.js)
+  ########################################
+  app:
+    # THAY ĐỔI 4: Build từ thư mục ứng dụng Node.js của bạn
+    build: ./serapi
+
+    # Đặt tên cho container
+    container_name: nodejs_app
+
+    # Ánh xạ cổng 3000 của máy bạn vào cổng 3000 của ứng dụng Node.js
+    ports:
+      - "3000:3000"
+
+    # Nạp các biến môi trường cho ứng dụng Node.js
+    env_file:
+      - ./serapi/.env
+
+    # Mount code từ máy của bạn vào container để live-reload khi code thay đổi
+    # Chú ý: Đường dẫn thư mục WORKDIR trong Dockerfile của serapi nên là /app
+    volumes:
+      - ./serapi:/app
+
+    # Đảm bảo 'app' chỉ khởi động sau khi 'db' đã sẵn sàng
+    depends_on:
+      - db
+
+# The top-level key where named volumes are defined.
+volumes:
+  # THAY ĐỔI 5: Đổi tên volume cho phù hợp với MySQL
+  mysql_data:
